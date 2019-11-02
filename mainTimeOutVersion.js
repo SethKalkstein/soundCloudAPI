@@ -1,9 +1,6 @@
 // api info:
 // https://developers.soundcloud.com/docs/api/sdks#javascript
 
-SC.initialize({
-    client_id: 'f665fc458615b821cdf1a26b6d1657f6' //connects to API
-  });
 
 var loadedSong;        //global for holding the stream 
 var firstPlay = true;  //is this the first time play has been hit for a particular song?

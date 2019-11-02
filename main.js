@@ -1,15 +1,12 @@
 // api info:
 // https://developers.soundcloud.com/docs/api/sdks#javascript
 
-// SC.initialize({
-//     client_id: 'f665fc458615b821cdf1a26b6d1657f6' //connects to API
-//   });
-
 var loadedSong;        //global for holding the stream 
 var firstPlay = true;  //is this the first time play has been hit for a particular song?
 var searchTrackArray = []; //will hold an array of objects with relevant information about tracks (each track is represented by an object which is a member of the array)
 var searchCounter = 0;
 var selectedTracks = [];
+var currentSong = 0;
 
 var playButton = document.getElementById("playButton"); 
 var pauseButton = document.getElementById("pauseButton");
@@ -60,8 +57,12 @@ function makesSearchList(){
 			console.log(searchTrackArray[i+startPosition]);
 			console.log((i+startPosition)+" inside for loop");
 			info.push(document.createElement("h6")); //creates a heading tag
-			let node = document.createTextNode(searchTrackArray[i+startPosition].song); //sets the id of a track equal to what the inner text will be
+			let node = document.createTextNode(i+startPosition + 1 + ". Song: " + searchTrackArray[i+startPosition].song  + " User: " + searchTrackArray[i+startPosition].user); //sets the id of a track equal to what the inner text will be
 			info[i].appendChild(node); //attaches that inner text to the h6 tag
+			info[i].addEventListener("click",()=> {
+				console.log(i+startPosition + " I've been clicked");
+				currentSong = i + startPosition;
+			})
 			searchResults.appendChild(info[i]); //attaches the h6 to the document
 	} //end for
 	searchCounter ++; //incrimenets the counter
@@ -72,17 +73,19 @@ function makesSearchList(){
 
 
 playButton.addEventListener('click', function(){
-	if(firstPlay==true){ 
+	// if(firstPlay==true){ 
 		// response=null;
-		SC.stream("/tracks/"+searchTrackArray[3].id).then(function(response){ //loads the song if it is the first time being played, will eventually be dynamic rather than calling [3] it will call [someVariable]
+		SC.stream("/tracks/"+searchTrackArray[currentSong].id).then(function(response){ //loads the song if it is the first time being played, will eventually be dynamic rather than calling [3] it will call [someVariable]
 			loadedSong = response; //sets the stream to a global variable so that it can be accessed outside this playbutton event
 			response.play(); //plays the song
-			firstPlay = false; //the track has now had the play button hit once
+
+			// firstPlay = false; //the track has now had the play button hit once
 		})
-	}
-	else{
-		loadedSong.play(); //play the song!
-	}
+		console.log("Now Playing: " + searchTrackArray[currentSong].song + " by User: " + searchTrackArray[currentSong].user);
+	// }
+	// else{
+	// 	loadedSong.play(); //play the song!
+	// }
 });
 
 pauseButton.addEventListener('click', function(){
