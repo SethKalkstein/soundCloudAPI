@@ -79,7 +79,7 @@ playButton.addEventListener('click', function(){
 			loadedSong = response; //sets the stream to a global variable so that it can be accessed outside this playbutton event
 			response.play(); //plays the song
 
-			// firstPlay = false; //the track has now had the play button hit once
+			// firstPlay = false; //the track has now had the play button hit one time
 		})
 		console.log("Now Playing: " + searchTrackArray[currentSong].song + " by User: " + searchTrackArray[currentSong].user);
 	// }
@@ -94,7 +94,7 @@ pauseButton.addEventListener('click', function(){
 
 searchStart.addEventListener("click", function(){
 	searchCounter=0;
-	makesSearchList(); //will always be the same results as the initial search load
+	makesSearchList(); //will always be the same results as the initial search load 
 });
 
 searchNext.addEventListener("click", function(){
