@@ -18,6 +18,34 @@ var searchPrev = document.getElementById("searchPrev");
 var searchEnd = document.getElementById("searchEnd");
 var searchStart = document.getElementById("searchStart");
 var pageNumber = document.getElementById("pageNumber");
+var seekForward = document.getElementById("seekForward");
+var seekBack = document.getElementById("seekBack");
+
+
+seekBack.addEventListener("click", () => {
+	skipBack()
+});
+
+seekForward.addEventListener("click", () => {
+	skipForward()
+});
+
+document.addEventListener("keydown", event => {
+	if (event.keyCode == 37) {
+		skipBack();
+	} else if (event.keyCode == 39){
+		skipForward();
+	}
+  });
+
+  function skipBack() {
+	  console.log("Skipping Back");
+  }
+
+  function skipForward() {
+	  console.log("Skipping Forward");
+  }
+
 
 
 searchButton.addEventListener("click", function(){ //searches for songs or artists/users
@@ -44,12 +72,15 @@ searchButton.addEventListener("click", function(){ //searches for songs or artis
 }) //end of event listener for search button
 
 function makesSearchList(){ 
-	searchResults.innerHTML="";
-	var info=[]; //will be an array of html elements
-	let startPosition=searchCounter*10; //finds the current position within the array that is being displayed
-	searchLength = 0;
-	if(searchTrackArray.length - searchCounter*10 <= 9){
-		searchLength = searchTrackArray.length -searchCounter*10;
+	
+	var info = []; //will be an array of html elements
+	let startPosition = searchCounter * 10; //finds the current position within the array that is being displayed
+	let searchLength = 0;
+
+	searchResults.innerHTML = "";
+
+	if(searchTrackArray.length - searchCounter * 10 <= 9){
+		searchLength = searchTrackArray.length -searchCounter * 10;
  	} else{
  		searchLength = 10;
  	}
@@ -60,32 +91,34 @@ function makesSearchList(){
 			let node = document.createTextNode(i+startPosition + 1 + ". Song: " + searchTrackArray[i+startPosition].song  + " User: " + searchTrackArray[i+startPosition].user); //sets the id of a track equal to what the inner text will be
 			info[i].appendChild(node); //attaches that inner text to the h6 tag
 			info[i].addEventListener("click",()=> {
-				console.log(i+startPosition + " I've been clicked");
+				console.log(i + startPosition + " I've been clicked");
 				currentSong = i + startPosition;
+				firstPlay = true;
 			})
 			searchResults.appendChild(info[i]); //attaches the h6 to the document
 	} //end for
 	searchCounter ++; //incrimenets the counter
 	console.log("search counter is: "+searchCounter);
-	pageNumber.innerHTML=searchCounter+" of "+Math.ceil(searchTrackArray.length/10); //tells the user which page of search results they are on
+	pageNumber.innerHTML = searchCounter + " of " + Math.ceil(searchTrackArray.length / 10); //tells the user which page of search results they are on
 } //end function. the function breaks when calling the specific searchTrackArray[] members because they are not defined
 
 
 
 playButton.addEventListener('click', function(){
-	// if(firstPlay==true){ 
-		// response=null;
-		SC.stream("/tracks/"+searchTrackArray[currentSong].id).then(function(response){ //loads the song if it is the first time being played, will eventually be dynamic rather than calling [3] it will call [someVariable]
+	if(firstPlay == true){ 
+		response = null;
+		SC.stream("/tracks/" + searchTrackArray[currentSong].id).then(function(response){ //loads the song if it is the first time being played, will eventually be dynamic rather than calling [3] it will call [someVariable]
 			loadedSong = response; //sets the stream to a global variable so that it can be accessed outside this playbutton event
-			response.play(); //plays the song
+			// response.play(); //plays the song
+			loadedSong.play()
 
-			// firstPlay = false; //the track has now had the play button hit one time
+			firstPlay = false; //the track has now had the play button hit one time
 		})
 		console.log("Now Playing: " + searchTrackArray[currentSong].song + " by User: " + searchTrackArray[currentSong].user);
-	// }
-	// else{
-	// 	loadedSong.play(); //play the song!
-	// }
+	}
+	else{
+		loadedSong.play(); //play the song!
+	}
 });
 
 pauseButton.addEventListener('click', function(){
