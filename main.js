@@ -24,6 +24,136 @@ var seekForward = document.getElementById("seekForward");
 var seekBack = document.getElementById("seekBack");
 
 
+  function skipBack() {
+	  console.log("About to Skip Back " + loadedSong.currentTime());
+	let newTimePosition = loadedSong.currentTime() > skipLength ? loadedSong.currentTime() - skipLength : 0;
+	loadedSong.seek(newTimePosition);
+	console.log("Skipped Back " + loadedSong.currentTime());
+  }
+
+  function skipForward() {
+	console.log("Skipped forward " + loadedSong.currentTime());
+	let newTimePosition = loadedSong.currentTime() + skipLength < songLength ? loadedSong.currentTime() + skipLength : songLength;
+	loadedSong.seek(newTimePosition);
+	console.log("Skipped Forward " + loadedSong.currentTime());
+  }
+
+function makesSearchList(){ 
+	
+	var info = []; //will be an array of html elements
+	let startPosition = searchCounter * 10; //current start position of displayed results
+	let currentDisplayedResults = 0; //number of results
+	let tracksUntilEnd = searchTrackArray.length - startPosition;
+	console.log("search counter: " + searchCounter);
+	searchResults.innerHTML = "";
+	
+	currentDisplayedResults = tracksUntilEnd <= 9 ? tracksUntilEnd : 10;
+
+	for(let i = 0; i < currentDisplayedResults; i++) { //only loads ten at a time
+		let currentPosition = i + startPosition;
+		console.log(searchTrackArray[currentPosition]);
+		console.log((currentPosition)+" inside for loop");
+		info.push(document.createElement("h6")); //creates a heading tag
+		let node = document.createTextNode(currentPosition + 1 + ". Song: " + searchTrackArray[currentPosition].song  + " User: " + searchTrackArray[currentPosition].user); //sets the id of a track equal to what the inner text will be
+		info[i].appendChild(node); //attaches that inner text to the h6 tag
+		info[i].addEventListener("click",()=> {
+			console.log(currentPosition + " I've been clicked");
+			currentSong = i + startPosition;
+			firstPlay = true;
+		})
+		searchResults.appendChild(info[i]); //attaches the h6 to the document
+	} 
+	console.log("search counter is: " + searchCounter);
+	pageNumber.innerHTML = searchCounter + 1 + " of " + Math.ceil(searchTrackArray.length / 10); 
+} 
+
+function getSongLength(){
+	songLength = loadedSong.getDuration();
+	console.log(songLength + " Purr and Purr");
+}
+
+
+searchButton.addEventListener("click", function(){ //searches for songs
+	searchTrackArray = []; //clears the array from the last search
+	SC.get("/tracks/",{    //call to the API to look for songs
+		limit: 200, q: userInput.value  //get in max of 200 results grabs user text from input box for the search
+	}).then(function(searchLoad){ //searchLoad is an array of objects representing tracks in the format sent from the API
+		//create array (searchTrackArray[]) of objects, globally, with only the info I need
+		for(let i = 0;i < searchLoad.length; i++){
+			var scTrack = {}; 
+			scTrack.id = searchLoad[i].id;  //assigns the track id to the object 
+			scTrack.art  = searchLoad[i].artwork_url; //assiigns the artwork, etc...
+			scTrack.user = searchLoad[i].user.username;
+			scTrack.date = searchLoad[i].created_at;
+			scTrack.song = searchLoad[i].title;
+			searchTrackArray.push(scTrack);  //pushes the object into the track array
+	} 
+	console.log(searchTrackArray);
+}).then(function(){ 
+	searchCounter = 0;
+	makesSearchList();
+}) //end .then()
+console.log("search button event listener finished");
+}) //end of event listener for search button
+
+
+playButton.addEventListener('click', function(){
+	if(firstPlay == true){ 
+		
+		SC.stream("/tracks/" + searchTrackArray[currentSong].id).then(function(response){ //loads the song if it is the first time the play button is being pushed.
+
+			loadedSong = response; //sets the stream to a global variable so that it can be accessed outside this playbutton event
+			firstPlay = false; //the track has now had the play button hit one time
+			
+			loadedSong.play();
+			loadedSong.on("play-start", getSongLength); 
+
+		})
+				
+		console.log("Now Playing: " + searchTrackArray[currentSong].song + " by User: " + searchTrackArray[currentSong].user);
+	
+	}
+	else{
+		loadedSong.play(); //play the song!
+	}
+
+});
+
+pauseButton.addEventListener('click', function(){
+	loadedSong.pause(); //pause it!
+	// console.log(loadedSong.getDuration());
+	console.log(loadedSong.currentTime());
+});
+
+searchStart.addEventListener("click", function(){
+	searchCounter = 0;
+	makesSearchList(); 
+});
+
+searchNext.addEventListener("click", function(){
+	let numOfMenuPages = searchTrackArray.length / 10 - 1; //starting with zero
+	//don't fire on last page of results
+	if(!(searchCounter === numOfMenuPages || numOfMenuPages - searchCounter < 0)){
+		searchCounter ++;
+		makesSearchList();
+	}	
+});
+
+searchPrev.addEventListener("click", function(){
+	//don't fire on first page of results
+	if(searchCounter != 0){
+		searchCounter--;
+		makesSearchList();
+	}	
+});
+
+searchEnd.addEventListener("click", function(){
+	let totalNumberOfTracks = searchTrackArray.length;
+	//set counter to last menu index depending on how many total tracks there are
+	searchCounter = totalNumberOfTracks % 10 === 0 ? totalNumberOfTracks / 10 - 1 : Math.floor(totalNumberOfTracks / 10);
+	makesSearchList();
+});
+
 seekBack.addEventListener("click", () => {
 	skipBack()
 });
@@ -39,160 +169,3 @@ document.addEventListener("keydown", event => {
 		skipForward();
 	}
   });
-
-  function skipBack() {
-	  console.log("About to Skip Back " + loadedSong.currentTime());
-	let newTimePosition = loadedSong.currentTime() > skipLength ? loadedSong.currentTime() - skipLength : 0;
-	loadedSong.seek(newTimePosition);
-	console.log("Skipped Back " + loadedSong.currentTime());
-  }
-
-  function skipForward() {
-	console.log("Skipped forward " + loadedSong.currentTime());
-	let newTimePosition = loadedSong.currentTime() + skipLength < songLength ? loadedSong.currentTime() + skipLength : songLength;
-	loadedSong.seek(newTimePosition);
-	console.log("Skipped Forward " + loadedSong.currentTime());
-  }
-
-
-
-searchButton.addEventListener("click", function(){ //searches for songs or artists/users
-		searchTrackArray = []; //clears the array from the last search
-		SC.get("/tracks/",{    //call to the API to look for songs
-			limit: 200, q: userInput.value  //get in max of 200 results grabs user text from input box for the search
-		}).then(function(searchLoad){ //searchLoad is a list of objects representing tracks in the format sent from the API
-			for(let i=0;i<searchLoad.length;i++){
-				var scTrack = {}; //creates empty object literal where only the information I'll be using is stored, this information will be global becuase it is being pushed into the global searchTrackArray variable
-				scTrack.id = searchLoad[i].id;  //assigns the track id to the object 
-				scTrack.art  = searchLoad[i].artwork_url; //assiigns the artwork, etc...
-				scTrack.user = searchLoad[i].user.username;
-				scTrack.date = searchLoad[i].created_at;
-				scTrack.song = searchLoad[i].title;
-				searchTrackArray.push(scTrack);  //pushes the object into the track array
-		} //end loop
-		console.log(searchLoad);
-	}).then(function(){ 
-		searchCounter = 0;
-		makesSearchList();
-	}) //end .then()
-	firstPlay = true; //resets the first play
-	console.log("search button event listener finished");
-}) //end of event listener for search button
-
-function makesSearchList(){ 
-	
-	var info = []; //will be an array of html elements
-	let startPosition = searchCounter * 10; //finds the current position within the array that is being displayed
-	let searchLength = 0;
-	console.log("search counter: " + searchCounter);
-	searchResults.innerHTML = "";
-
-	if(searchTrackArray.length - searchCounter * 10 <= 9){
-		searchLength = searchTrackArray.length -searchCounter * 10;
- 	} else{
- 		searchLength = 10;
- 	}
-	for(let i = 0; i < searchLength; i++) { //only loads ten at a time
-			console.log(searchTrackArray[i+startPosition]);
-			console.log((i+startPosition)+" inside for loop");
-			info.push(document.createElement("h6")); //creates a heading tag
-			let node = document.createTextNode(i+startPosition + 1 + ". Song: " + searchTrackArray[i+startPosition].song  + " User: " + searchTrackArray[i+startPosition].user); //sets the id of a track equal to what the inner text will be
-			info[i].appendChild(node); //attaches that inner text to the h6 tag
-			info[i].addEventListener("click",()=> {
-				console.log(i + startPosition + " I've been clicked");
-				currentSong = i + startPosition;
-				firstPlay = true;
-			})
-			searchResults.appendChild(info[i]); //attaches the h6 to the document
-	} //end for
-	searchCounter ++; //incrimenets the counter
-	console.log("search counter is: " + searchCounter);
-	pageNumber.innerHTML = searchCounter + " of " + Math.ceil(searchTrackArray.length / 10); //tells the user which page of search results they are on
-} //end function. the function breaks when calling the specific searchTrackArray[] members because they are not defined
-
-
-
-playButton.addEventListener('click', function(){
-	if(firstPlay == true){ 
-		
-		SC.stream("/tracks/" + searchTrackArray[currentSong].id).then(function(response){ //loads the song if it is the first time the play button is being pushed.
-
-			loadedSong = response; //sets the stream to a global variable so that it can be accessed outside this playbutton event
-
-			loadedSong.play();
-
-			firstPlay = false; //the track has now had the play button hit one time
-
-			loadedSong.on("play-start", getSongLength);
-
-
-		})
-				
-		console.log("Now Playing: " + searchTrackArray[currentSong].song + " by User: " + searchTrackArray[currentSong].user);
-	
-	}
-	else{
-		loadedSong.play(); //play the song!
-	}
-});
-
-function getSongLength(){
-	songLength = loadedSong.getDuration();
-	console.log(songLength + " Purr and Purr");
-}
-
-
-pauseButton.addEventListener('click', function(){
-	loadedSong.pause(); //pause it!
-	// console.log(loadedSong.getDuration());
-	console.log(loadedSong.currentTime());
-});
-
-searchStart.addEventListener("click", function(){
-	searchCounter = 0;
-	makesSearchList(); //will always be the same results as the initial search load 
-});
-
-searchNext.addEventListener("click", function(){
-	if(searchCounter === searchTrackArray.length / 10){
-		console.log("blah")
-		searchCounter = searchTrackArray.length / 10 - 1;
-		makesSearchList();
-	}
-	else if(searchTrackArray.length / 10 - searchCounter < 1){ //if there are less than 10 items left in the array
-		searchCounter = Math.floor(searchTrackArray.length / 10);
-		makesSearchList();
-	}
-	else{
-		makesSearchList(); //loads the next search
-	} //end else
-});
-
-searchPrev.addEventListener("click", function(){
-	if(searchCounter === 1){
-		searchCounter = 0;
-		makesSearchList();
-	}
-	else{
-		searchCounter -= 2;
-		makesSearchList();
-	}
-});
-
-searchEnd.addEventListener("click", function(){
-	if(searchTrackArray.length % 10 === 0){ //when the number of results is divisible by 10
-		searchCounter = searchTrackArray.length / 10 - 1;
-		makesSearchList();
-	}
-	else{
-		searchCounter = Math.floor(searchTrackArray.length / 10);
-		makesSearchList();
-	}
-});
-
-// //function to set the timeout for the creation of the modal
-// function durationLoader(){
-// 	setTimeout(()=>console.log(loadedSong.getDuration() + "Meow"), 3000);
-// }
-// //add an event listener to the page upon loading
-// playButton.addEventListener("click", durationLoader);
