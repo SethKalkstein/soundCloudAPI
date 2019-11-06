@@ -84,7 +84,7 @@ function makesSearchList(){
 	var info = []; //will be an array of html elements
 	let startPosition = searchCounter * 10; //finds the current position within the array that is being displayed
 	let searchLength = 0;
-
+	console.log("search counter: " + searchCounter);
 	searchResults.innerHTML = "";
 
 	if(searchTrackArray.length - searchCounter * 10 <= 9){
@@ -92,7 +92,7 @@ function makesSearchList(){
  	} else{
  		searchLength = 10;
  	}
-	for(let i=0; i<searchLength; i++) { //only loads ten at a time
+	for(let i = 0; i < searchLength; i++) { //only loads ten at a time
 			console.log(searchTrackArray[i+startPosition]);
 			console.log((i+startPosition)+" inside for loop");
 			info.push(document.createElement("h6")); //creates a heading tag
@@ -106,7 +106,7 @@ function makesSearchList(){
 			searchResults.appendChild(info[i]); //attaches the h6 to the document
 	} //end for
 	searchCounter ++; //incrimenets the counter
-	console.log("search counter is: "+searchCounter);
+	console.log("search counter is: " + searchCounter);
 	pageNumber.innerHTML = searchCounter + " of " + Math.ceil(searchTrackArray.length / 10); //tells the user which page of search results they are on
 } //end function. the function breaks when calling the specific searchTrackArray[] members because they are not defined
 
@@ -114,31 +114,20 @@ function makesSearchList(){
 
 playButton.addEventListener('click', function(){
 	if(firstPlay == true){ 
-		// response = null;
+		
 		SC.stream("/tracks/" + searchTrackArray[currentSong].id).then(function(response){ //loads the song if it is the first time the play button is being pushed.
 
 			loadedSong = response; //sets the stream to a global variable so that it can be accessed outside this playbutton event
-			// response.play(); //plays the song
+
 			loadedSong.play();
-			// console.log(loadedSong.getDuration());
+
 			firstPlay = false; //the track has now had the play button hit one time
-			// console.log(loadedSong.getDuration() + "Meow");
+
 			loadedSong.on("play-start", getSongLength);
-			// function(){
-			// 	songLength = loadedSong.getDuration();
-			// 	console.log(songLength + " Purr and Purr");
-			// });
+
+
 		})
-		// .then(function(){ 
-		// 	searchCounter = 5;
-		// 	makesSearchList();
-		// 	// console.log(response.getDuration());
-		// });
-		
-		
-	//	then(() => console.log(loadedSong.getDuration()));
-		
-		
+				
 		console.log("Now Playing: " + searchTrackArray[currentSong].song + " by User: " + searchTrackArray[currentSong].user);
 	
 	}
