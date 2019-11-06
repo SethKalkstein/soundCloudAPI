@@ -22,6 +22,7 @@ var searchStart = document.getElementById("searchStart");
 var pageNumber = document.getElementById("pageNumber");
 var seekForward = document.getElementById("seekForward");
 var seekBack = document.getElementById("seekBack");
+var autoPlayCheck = document.getElementById("autoPlayCheck");
 
 
   function skipBack() {
@@ -72,6 +73,24 @@ function getSongLength(){
 	console.log(songLength + " Purr and Purr");
 }
 
+function autoPlay(){
+	// if(autoPlayCheck.checked){
+	// 	firstPlay = true;
+	// 	currentSong ++;
+	// 	playSong();
+	// } 
+	nextOrPrevSong(1);
+}
+
+function nextOrPrevSong(advanceSong){ //advance song represents the number of songs advanced, negative for previous songs
+	if(currentSong + advanceSong >= 0 && currentSong + advanceSong < searchTrackArray.length ){
+		firstPlay = true;
+		currentSong += advanceSong;
+		playSong();
+	}
+
+}
+
 
 searchButton.addEventListener("click", function(){ //searches for songs
 	searchTrackArray = []; //clears the array from the last search
@@ -96,8 +115,7 @@ searchButton.addEventListener("click", function(){ //searches for songs
 console.log("search button event listener finished");
 }) //end of event listener for search button
 
-
-playButton.addEventListener('click', function(){
+function playSong(){
 	if(firstPlay == true){ 
 		
 		SC.stream("/tracks/" + searchTrackArray[currentSong].id).then(function(response){ //loads the song if it is the first time the play button is being pushed.
@@ -106,7 +124,8 @@ playButton.addEventListener('click', function(){
 			firstPlay = false; //the track has now had the play button hit one time
 			
 			loadedSong.play();
-			loadedSong.on("play-start", getSongLength); 
+			loadedSong.on("play-start", getSongLength);
+			loadedSong.on("finish", autoPlay); 
 
 		})
 				
@@ -116,7 +135,10 @@ playButton.addEventListener('click', function(){
 	else{
 		loadedSong.play(); //play the song!
 	}
+}
 
+playButton.addEventListener('click', function(){
+	playSong();
 });
 
 pauseButton.addEventListener('click', function(){
@@ -167,5 +189,9 @@ document.addEventListener("keydown", event => {
 		skipBack();
 	} else if (event.keyCode == 39){
 		skipForward();
+	} else if (event.keyCode == 38){
+		nextOrPrevSong(-1); //previous song
+	} else if (event.keyCode == 40) {
+		nextOrPrevSong(1);
 	}
   });
