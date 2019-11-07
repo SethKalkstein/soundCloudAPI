@@ -23,6 +23,8 @@ var pageNumber = document.getElementById("pageNumber");
 var seekForward = document.getElementById("seekForward");
 var seekBack = document.getElementById("seekBack");
 var autoPlayCheck = document.getElementById("autoPlayCheck");
+var repeatSongCheck = document.getElementById("repeatSong");
+var repeatAllCheck = document.getElementById("repeatAll");
 
 
   function skipBack() {
@@ -73,24 +75,53 @@ function getSongLength(){
 	console.log(songLength + " Purr and Purr");
 }
 
-function autoPlay(){
-	// if(autoPlayCheck.checked){
-	// 	firstPlay = true;
-	// 	currentSong ++;
-	// 	playSong();
-	// } 
-	nextOrPrevSong(1);
+// function autoPlay(){ 
+// 	if(autoPlayCheck.checked) {
+// 		songAdvancer(1);
+// 		// autoPlayCheck.checked = false;
+// 	}
+// }
+
+function endOfSongController() {
+	let lastTrackPos = searchTrackArray.length - 1; 
+
+	if(repeatSongCheck.checked){
+		songAdvancer(0); //will set off events to reinitialize the same track
+	} else if(currentSong == lastTrackPos && repeatAllCheck.checked ){
+		songAdvancer(-lastTrackPos); //will go back the total number of tracks
+	} else if (autoPlayCheck.checked){
+		songAdvancer(1); //advance one song
+	}
 }
 
-function nextOrPrevSong(advanceSong){ //advance song represents the number of songs advanced, negative for previous songs
+function songAdvancer(advanceSong){ //advance song represents the number of songs advanced, negative for previous songs
 	if(currentSong + advanceSong >= 0 && currentSong + advanceSong < searchTrackArray.length ){
 		firstPlay = true;
 		currentSong += advanceSong;
 		playSong();
 	}
-
 }
 
+
+autoPlayCheck.addEventListener("click", function() {
+	if(this.checked){
+		repeatSongCheck.checked = false; 
+	}
+});
+
+repeatSongCheck.addEventListener("click", function() {
+	if(this.checked){
+		repeatAllCheck.checked = false;
+		autoPlayCheck.checked = false; 
+	}
+});
+
+repeatAllCheck.addEventListener("click", function () {
+	if(this.checked) {
+		repeatSongCheck.checked = false;
+		autoPlayCheck.checked = true;
+	}
+});
 
 searchButton.addEventListener("click", function(){ //searches for songs
 	searchTrackArray = []; //clears the array from the last search
@@ -107,7 +138,7 @@ searchButton.addEventListener("click", function(){ //searches for songs
 			scTrack.song = searchLoad[i].title;
 			searchTrackArray.push(scTrack);  //pushes the object into the track array
 	} 
-	console.log(searchTrackArray);
+	console.log(searchLoad);
 }).then(function(){ 
 	searchCounter = 0;
 	makesSearchList();
@@ -125,7 +156,8 @@ function playSong(){
 			
 			loadedSong.play();
 			loadedSong.on("play-start", getSongLength);
-			loadedSong.on("finish", autoPlay); 
+			// loadedSong.on("finish", autoPlay); 
+			loadedSong.on("finish", endOfSongController); 
 
 		})
 				
@@ -190,8 +222,8 @@ document.addEventListener("keydown", event => {
 	} else if (event.keyCode == 39){
 		skipForward();
 	} else if (event.keyCode == 38){
-		nextOrPrevSong(-1); //previous song
+		songAdvancer(-1); //previous song
 	} else if (event.keyCode == 40) {
-		nextOrPrevSong(1);
+		songAdvancer(1);
 	}
   });
