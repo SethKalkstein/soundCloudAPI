@@ -38,9 +38,29 @@ function addTimeHTML() {
 }
 
 function skipBack() {
-	  console.log("About to Skip Back " + loadedSong.currentTime());
-	let newTimePosition = loadedSong.currentTime() > skipLength ? loadedSong.currentTime() - skipLength : 0;
+	console.log("About to Skip Back " + loadedSong.currentTime());
+	
+	let newTimePosition = loadedSong.currentTime() - skipLength;
+
+	if(newTimePosition < 0) {
+		if(autoPlayCheck.checked){
+			
+			songAdvancer(-1);
+
+			window.setTimeout(function () {
+				newTimePosition = loadedSong.getDuration() + newTimePosition;
+				loadedSong.seek(newTimePosition);
+				return;
+			}, 1000);
+				
+		} else if (repeatSongCheck.checked) {
+			newTimePosition = loadedSong.getDuration() + newTimePosition;
+		} else {
+			newTimePosition = 0;
+		}
+	}
 	loadedSong.seek(newTimePosition);
+	
 	console.log("Skipped Back " + loadedSong.currentTime());
 }
 
@@ -91,16 +111,26 @@ function endOfSongController() {
 	if(repeatSongCheck.checked){
 		songAdvancer(0); //will set off events to reinitialize the same track
 	} else if(currentSong == lastTrackPos && repeatAllCheck.checked ){
-		songAdvancer(-lastTrackPos); //will go back the total number of tracks
+		songAdvancer(-lastTrackPos); //will go back the total number of tracks to the first track
 	} else if (autoPlayCheck.checked){
 		songAdvancer(1); //advance one song
 	}
 }
 
 function songAdvancer(advanceSong){ //advance song represents the number of songs advanced, negative for previous songs
-	if(currentSong + advanceSong >= 0 && currentSong + advanceSong < searchTrackArray.length ){
+	let nextSong = currentSong + advanceSong;
+
+	if(repeatAllCheck.checked){
+		if(nextSong < 0) {
+			nextSong = searchTrackArray.length - 1;
+		} else if (nextSong >= searchTrackArray.length){
+			nextSong = 0;
+		}
+	}
+
+	if(nextSong >= 0 && nextSong < searchTrackArray.length ){
 		firstPlay = true;
-		currentSong += advanceSong;
+		currentSong = nextSong;
 		playSong();
 	}
 }
