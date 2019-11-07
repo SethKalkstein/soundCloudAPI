@@ -98,9 +98,19 @@ function endOfSongController() {
 }
 
 function songAdvancer(advanceSong){ //advance song represents the number of songs advanced, negative for previous songs
-	if(currentSong + advanceSong >= 0 && currentSong + advanceSong < searchTrackArray.length ){
+	let nextSong = currentSong + advanceSong;
+	
+	if(repeatAllCheck.checked){
+		if(nextSong < 0) {
+			nextSong = searchTrackArray.length - 1;
+		} else if (nextSong >= searchTrackArray.length){
+			nextSong = 0;
+		}
+	}
+
+	if(nextSong >= 0 && nextSong < searchTrackArray.length ){
 		firstPlay = true;
-		currentSong += advanceSong;
+		currentSong = nextSong;
 		playSong();
 	}
 }
