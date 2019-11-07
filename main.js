@@ -25,21 +25,31 @@ var seekBack = document.getElementById("seekBack");
 var autoPlayCheck = document.getElementById("autoPlayCheck");
 var repeatSongCheck = document.getElementById("repeatSong");
 var repeatAllCheck = document.getElementById("repeatAll");
+var songClock = document.getElementById("songClock");
 
+var intervalID = setInterval(addTimeHTML, 500);
 
-  function skipBack() {
+function addTimeHTML() {
+	if (loadedSong && (loadedSong.getState() == "playing" || loadedSong.getState() == "paused" )){
+		songClock.innerHTML = Math.floor(loadedSong.currentTime()/1000) + " of " + Math.floor(songLength/1000); 	
+	} else {
+		songClock.innerHTML = "0 of 0";
+	}
+}
+
+function skipBack() {
 	  console.log("About to Skip Back " + loadedSong.currentTime());
 	let newTimePosition = loadedSong.currentTime() > skipLength ? loadedSong.currentTime() - skipLength : 0;
 	loadedSong.seek(newTimePosition);
 	console.log("Skipped Back " + loadedSong.currentTime());
-  }
+}
 
-  function skipForward() {
+function skipForward() {
 	console.log("Skipped forward " + loadedSong.currentTime());
 	let newTimePosition = loadedSong.currentTime() + skipLength < songLength ? loadedSong.currentTime() + skipLength : songLength;
 	loadedSong.seek(newTimePosition);
 	console.log("Skipped Forward " + loadedSong.currentTime());
-  }
+}
 
 function makesSearchList(){ 
 	
@@ -74,13 +84,6 @@ function getSongLength(){
 	songLength = loadedSong.getDuration();
 	console.log(songLength + " Purr and Purr");
 }
-
-// function autoPlay(){ 
-// 	if(autoPlayCheck.checked) {
-// 		songAdvancer(1);
-// 		// autoPlayCheck.checked = false;
-// 	}
-// }
 
 function endOfSongController() {
 	let lastTrackPos = searchTrackArray.length - 1; 
@@ -139,11 +142,11 @@ searchButton.addEventListener("click", function(){ //searches for songs
 			searchTrackArray.push(scTrack);  //pushes the object into the track array
 	} 
 	console.log(searchLoad);
-}).then(function(){ 
-	searchCounter = 0;
-	makesSearchList();
-}) //end .then()
-console.log("search button event listener finished");
+	}).then(function(){ 
+		searchCounter = 0;
+		makesSearchList();
+	}) //end .then()
+	console.log("search button event listener finished");
 }) //end of event listener for search button
 
 function playSong(){
