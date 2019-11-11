@@ -26,8 +26,27 @@ var autoPlayCheck = document.getElementById("autoPlayCheck");
 var repeatSongCheck = document.getElementById("repeatSong");
 var repeatAllCheck = document.getElementById("repeatAll");
 var songClock = document.getElementById("songClock");
+var songProgress = document.getElementById("songProgress");
 
 var intervalID = setInterval(addTimeHTML, 500);
+var intervalID = setInterval(addProgress, 100);
+
+function addProgress() {
+	if (loadedSong && (loadedSong.getState() == "playing" || loadedSong.getState() == "paused" )){
+		// songClock.innerHTML = Math.floor(loadedSong.currentTime()/1000) + " of " + Math.floor(songLength/1000); 
+		songProgress.value = loadedSong.currentTime();
+		songProgress.max = songLength;	
+	} else {
+		songProgress.value = 0;
+		songProgress.max = 0;
+	}
+}
+
+function dragSeek(mousePosition) {
+	let percent = mousePosition.offsetX / this.offsetWidth;
+	let newTimePosition = percent * songLength;
+	loadedSong.seek(newTimePosition)
+}
 
 function addTimeHTML() {
 	if (loadedSong && (loadedSong.getState() == "playing" || loadedSong.getState() == "paused" )){
@@ -272,6 +291,8 @@ searchEnd.addEventListener("click", function(){
 	makesSearchList();
 });
 
+songProgress.addEventListener("click", dragSeek);
+
 seekBack.addEventListener("click", () => {
 	skipBack()
 });
@@ -291,3 +312,4 @@ document.addEventListener("keydown", event => {
 		songAdvancer(1);
 	}
   });
+
