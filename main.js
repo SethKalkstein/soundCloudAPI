@@ -56,7 +56,7 @@ function addTimeHTML() {
 	}
 }
 
-async function skipBack() {
+function skipBack() {
 	console.log("About to Skip Back " + loadedSong.currentTime());
 	
 	let newTimePosition = loadedSong.currentTime() - skipLength;
@@ -64,18 +64,14 @@ async function skipBack() {
 	if(newTimePosition < 0) {
 		if(autoPlayCheck.checked){
 			
-			var loading = await songAdvancer(-1);
+			songAdvancer(-1);
 
-			// window.setTimeout(function () {
-			// 	newTimePosition = loadedSong.getDuration() + newTimePosition;
-			// 	loadedSong.seek(newTimePosition);
-			// 	return;
-			// }, 1000);
+			window.setTimeout(function () {
+				newTimePosition = loadedSong.getDuration() + newTimePosition;
+				loadedSong.seek(newTimePosition);
+				return;
+			}, 1000);
 				
-			newTimePosition = songLength + newTimePosition;
-			loadedSong.seek(newTimePosition)
-
-
 		} else if (repeatSongCheck.checked) {
 			newTimePosition = loadedSong.getDuration() + newTimePosition;
 		} else {
@@ -142,7 +138,7 @@ function endOfSongController() {
 
 function songAdvancer(advanceSong){ //advance song represents the number of songs advanced, negative for previous songs
 	let nextSong = currentSong + advanceSong;
-	
+
 	if(repeatAllCheck.checked){
 		if(nextSong < 0) {
 			nextSong = searchTrackArray.length - 1;
@@ -150,62 +146,13 @@ function songAdvancer(advanceSong){ //advance song represents the number of song
 			nextSong = 0;
 		}
 	}
-	
+
 	if(nextSong >= 0 && nextSong < searchTrackArray.length ){
 		firstPlay = true;
 		currentSong = nextSong;
 		playSong();
 	}
-	return true;
 }
-function loadSong(){
-
-}
-
-function playSong(){
-	if(firstPlay == true){ 
-		
-		SC.stream("/tracks/" + searchTrackArray[currentSong].id).then(function(response){ //loads the song if it is the first time the play button is being pushed.
-
-			loadedSong = response; //sets the stream to a global variable so that it can be accessed outside this playbutton event
-			firstPlay = false; //the track has now had the play button hit one time
-			
-			loadedSong.play();
-			loadedSong.on("play-start", getSongLength);
-			// loadedSong.on("finish", autoPlay); 
-			loadedSong.on("finish", endOfSongController); 
-
-		})
-				
-		console.log("Now Playing: " + searchTrackArray[currentSong].song + " by User: " + searchTrackArray[currentSong].user);
-	
-	}
-	else{
-		loadedSong.play(); //play the song!
-	}
-}
-// function playSong(){
-// 	if(firstPlay == true){ 
-		
-// 		SC.stream("/tracks/" + searchTrackArray[currentSong].id).then(function(response){ //loads the song if it is the first time the play button is being pushed.
-
-// 			loadedSong = response; //sets the stream to a global variable so that it can be accessed outside this playbutton event
-// 			firstPlay = false; //the track has now had the play button hit one time
-			
-// 			loadedSong.play();
-// 			loadedSong.on("play-start", getSongLength);
-// 			// loadedSong.on("finish", autoPlay); 
-// 			loadedSong.on("finish", endOfSongController); 
-
-// 		})
-				
-// 		console.log("Now Playing: " + searchTrackArray[currentSong].song + " by User: " + searchTrackArray[currentSong].user);
-	
-// 	}
-// 	else{
-// 		loadedSong.play(); //play the song!
-// 	}
-// }
 
 
 autoPlayCheck.addEventListener("click", function() {
@@ -251,6 +198,28 @@ searchButton.addEventListener("click", function(){ //searches for songs
 	console.log("search button event listener finished");
 }) //end of event listener for search button
 
+function playSong(){
+	if(firstPlay == true){ 
+		
+		SC.stream("/tracks/" + searchTrackArray[currentSong].id).then(function(response){ //loads the song if it is the first time the play button is being pushed.
+
+			loadedSong = response; //sets the stream to a global variable so that it can be accessed outside this playbutton event
+			firstPlay = false; //the track has now had the play button hit one time
+			
+			loadedSong.play();
+			loadedSong.on("play-start", getSongLength);
+			// loadedSong.on("finish", autoPlay); 
+			loadedSong.on("finish", endOfSongController); 
+
+		})
+				
+		console.log("Now Playing: " + searchTrackArray[currentSong].song + " by User: " + searchTrackArray[currentSong].user);
+	
+	}
+	else{
+		loadedSong.play(); //play the song!
+	}
+}
 
 playButton.addEventListener('click', function(){
 	playSong();
@@ -312,4 +281,3 @@ document.addEventListener("keydown", event => {
 		songAdvancer(1);
 	}
   });
-
